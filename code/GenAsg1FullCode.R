@@ -1,16 +1,27 @@
-#Using EM algorithm
+# Input: 
+#     nA: number of people with A genotype
+#     nB: number of people with B genotype
+#     nAB: number of people with AB genotype
+#     nO: number of people with O genotype
 
+# Output:
+#     p: allele frequency of A
+#     q: allele frequency of B
+
+# logL~= nA*(p^2+2*p*(1-p-q)) + nB*(q^2+2*q*(1-p-q)) + nAB*(2*p*q) + nO*(1-p-q)^2
+
+
+# Input parameters
 nA = 9123
 nB = 2987
 nAB = 1269
 nO = 7725
-
-# output: nAA, nAO, nBB, nBO, nAB, nOO.
-
-p = 0.3
-q = 0.4
 n = nA + nB + nAB + nO
 
+### Using EM algorithm ###
+# Initialization
+p = 0.3
+q = 0.4
 pOld = Inf
 qOld = Inf
 
@@ -45,13 +56,7 @@ while((abs(p - pOld) > 1e-12) && (abs(q - qOld) > 1e-12))
 cat('avg run time:', totalTime/totalIter, '\n')
 cat('total iterations:', totalIter, '\n')
 
-#Using Newton-Raphson algorithm
-
-nA = 9123
-nB = 2987
-nAB = 1269
-nO = 7725
-
+### Using Newton-Raphson algorithm ###
 library(numDeriv)
 
 f<-function(x)
@@ -64,8 +69,8 @@ f<-function(x)
 x0=c(0.3,0.4)
 
 xk=x0
-xkplusone=Inf
-dif=abs(xkplusone-xk)
+xk_next=Inf
+dif=abs(xk_next-xk)
 print(dif[1])
 dif<-c(1,1)
 
@@ -76,13 +81,13 @@ while((dif[1]>1e-12 && dif[2]>1e-12))
 {
   startTime <- Sys.time()
   
-  fprime<-grad(f,xk)
-  fpprime<-hessian(f,xk)
-  invfpprime<-solve(fpprime)
-  xkplusone=xk-invfpprime%*%fprime
-  dif=abs(xkplusone-xk)
-  xk=xkplusone
-  print(xkplusone)
+  df<-grad(f,xk)
+  ddf<-hessian(f,xk)
+  inv_ddf<-solve(ddf)
+  xk_next=xk-inv_ddf%*%df
+  dif=abs(xk_next-xk)
+  xk=xk_next
+  print(xk_next)
   
   endTime <- Sys.time()
   totalTime = (endTime - startTime) + totalTime
@@ -96,14 +101,9 @@ end
 cat('avg run time:', totalTime/totalIter, '\n')
 cat('total iterations:', totalIter, '\n')
 
-#Using Grid searching
 
+### Using Grid searching ###
 library("scatterplot3d")
-
-nA = 9123
-nB = 2987
-nAB = 1269
-nO = 7725
 
 # initialize loglikelihood function
 objFunc<-function(p,q)
